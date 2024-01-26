@@ -41,8 +41,11 @@ def generate_random_tool():
     }
 
 def generate_tools_list(tool_count):
-    tools_list = [generate_random_tool() for _ in range(tool_count)]
-    return tools_list
+    tools_dict = {}
+    for _ in range(tool_count):
+        tool = generate_random_tool()
+        tools_dict.update(tool)
+    return tools_dict
 
 def generate_file_name():
     # Specify the path to the cuttingtools folder
@@ -60,12 +63,12 @@ def generate_file_name():
 def main():
     tool_count = 20
     
-    tools_list = generate_tools_list(tool_count)
+    tools_dict = generate_tools_list(tool_count)
 
     # Save the generated tools to a new JSON file with a dynamic name
     file_name = generate_file_name()
     with open(file_name, "w") as json_file:
-        json.dump(tools_list, json_file, indent=2)
+        json.dump(tools_dict, json_file, indent=2)
 
     print(f"{tool_count} new tools added to the new JSON file: {file_name}")
 

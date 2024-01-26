@@ -1,0 +1,382 @@
+{
+  "349854": {
+    "type": "endmill",
+    "diameter": 2.625,
+    "flutes": 3,
+    "length": 3.9906,
+    "cutlength": 1.1774,
+    "ipt": {
+      "min": 0.0016,
+      "max": 0.0041
+    },
+    "sfm": {
+      "min": 209.7202,
+      "max": 412.8051
+    },
+    "indexable": false,
+    "coolant": true,
+    "air": false,
+    "cutcom": false
+  },
+  "208667": {
+    "type": "endmill",
+    "diameter": 1.75,
+    "flutes": 4,
+    "length": 6.2249,
+    "cutlength": 3.1479,
+    "ipt": {
+      "min": 0.0077,
+      "max": 0.0197
+    },
+    "sfm": {
+      "min": 586.1108,
+      "max": 1000
+    },
+    "indexable": true,
+    "coolant": true,
+    "air": false,
+    "cutcom": true
+  },
+  "803424": {
+    "type": "endmill",
+    "diameter": 0.875,
+    "flutes": 6,
+    "length": 4.2735,
+    "cutlength": 1.1009,
+    "ipt": {
+      "min": 0.0134,
+      "max": 0.02
+    },
+    "sfm": {
+      "min": 317.4109,
+      "max": 390.3869
+    },
+    "indexable": true,
+    "coolant": false,
+    "air": false,
+    "cutcom": true
+  },
+  "793470": {
+    "type": "endmill",
+    "diameter": 2.625,
+    "flutes": 5,
+    "length": 4.1129,
+    "cutlength": 1.0009,
+    "ipt": {
+      "min": 0.0076,
+      "max": 0.02
+    },
+    "sfm": {
+      "min": 923.6758,
+      "max": 1000
+    },
+    "indexable": false,
+    "coolant": false,
+    "air": true,
+    "cutcom": false
+  },
+  "823091": {
+    "type": "endmill",
+    "diameter": 1.125,
+    "flutes": 5,
+    "length": 6.9521,
+    "cutlength": 2.7846,
+    "ipt": {
+      "min": 0.0176,
+      "max": 0.02
+    },
+    "sfm": {
+      "min": 645.0848,
+      "max": 1000
+    },
+    "indexable": true,
+    "coolant": false,
+    "air": true,
+    "cutcom": false
+  },
+  "998200": {
+    "type": "endmill",
+    "diameter": 2.5,
+    "flutes": 6,
+    "length": 3.7717,
+    "cutlength": 0.6554,
+    "ipt": {
+      "min": 0.0084,
+      "max": 0.02
+    },
+    "sfm": {
+      "min": 501.899,
+      "max": 1000
+    },
+    "indexable": true,
+    "coolant": false,
+    "air": false,
+    "cutcom": false
+  },
+  "183103": {
+    "type": "endmill",
+    "diameter": 1.0,
+    "flutes": 4,
+    "length": 3.2445,
+    "cutlength": 0.8718,
+    "ipt": {
+      "min": 0.0186,
+      "max": 0.02
+    },
+    "sfm": {
+      "min": 87.2847,
+      "max": 163.4752
+    },
+    "indexable": true,
+    "coolant": true,
+    "air": false,
+    "cutcom": false
+  },
+  "692151": {
+    "type": "endmill",
+    "diameter": 1.125,
+    "flutes": 4,
+    "length": 6.6445,
+    "cutlength": 3.4033,
+    "ipt": {
+      "min": 0.0019,
+      "max": 0.0084
+    },
+    "sfm": {
+      "min": 975.8684,
+      "max": 1000
+    },
+    "indexable": true,
+    "coolant": false,
+    "air": false,
+    "cutcom": false
+  },
+  "703011": {
+    "type": "endmill",
+    "diameter": 0.875,
+    "flutes": 3,
+    "length": 6.6836,
+    "cutlength": 2.3143,
+    "ipt": {
+      "min": 0.018,
+      "max": 0.02
+    },
+    "sfm": {
+      "min": 206.6979,
+      "max": 385.2045
+    },
+    "indexable": false,
+    "coolant": false,
+    "air": false,
+    "cutcom": true
+  },
+  "257606": {
+    "type": "endmill",
+    "diameter": 1.875,
+    "flutes": 2,
+    "length": 5.8386,
+    "cutlength": 0.9449,
+    "ipt": {
+      "min": 0.0022,
+      "max": 0.0037
+    },
+    "sfm": {
+      "min": 504.2843,
+      "max": 1000
+    },
+    "indexable": true,
+    "coolant": true,
+    "air": true,
+    "cutcom": false
+  },
+  "774917": {
+    "type": "endmill",
+    "diameter": 2.375,
+    "flutes": 5,
+    "length": 4.2976,
+    "cutlength": 1.9146,
+    "ipt": {
+      "min": 0.0112,
+      "max": 0.02
+    },
+    "sfm": {
+      "min": 928.5992,
+      "max": 1000
+    },
+    "indexable": true,
+    "coolant": false,
+    "air": false,
+    "cutcom": false
+  },
+  "973440": {
+    "type": "endmill",
+    "diameter": 0.375,
+    "flutes": 5,
+    "length": 6.8642,
+    "cutlength": 3.3351,
+    "ipt": {
+      "min": 0.0006,
+      "max": 0.0028
+    },
+    "sfm": {
+      "min": 637.2461,
+      "max": 1000
+    },
+    "indexable": true,
+    "coolant": true,
+    "air": true,
+    "cutcom": false
+  },
+  "935601": {
+    "type": "endmill",
+    "diameter": 0.5,
+    "flutes": 6,
+    "length": 4.0898,
+    "cutlength": 2.2905,
+    "ipt": {
+      "min": 0.0176,
+      "max": 0.02
+    },
+    "sfm": {
+      "min": 625.5286,
+      "max": 1000
+    },
+    "indexable": false,
+    "coolant": true,
+    "air": false,
+    "cutcom": true
+  },
+  "731017": {
+    "type": "endmill",
+    "diameter": 2.25,
+    "flutes": 6,
+    "length": 3.9509,
+    "cutlength": 2.165,
+    "ipt": {
+      "min": 0.0109,
+      "max": 0.02
+    },
+    "sfm": {
+      "min": 687.6126,
+      "max": 1000
+    },
+    "indexable": false,
+    "coolant": true,
+    "air": true,
+    "cutcom": true
+  },
+  "581507": {
+    "type": "endmill",
+    "diameter": 2.375,
+    "flutes": 4,
+    "length": 3.4016,
+    "cutlength": 1.4144,
+    "ipt": {
+      "min": 0.0046,
+      "max": 0.008
+    },
+    "sfm": {
+      "min": 475.9806,
+      "max": 820.5378
+    },
+    "indexable": true,
+    "coolant": true,
+    "air": false,
+    "cutcom": false
+  },
+  "991538": {
+    "type": "endmill",
+    "diameter": 1.625,
+    "flutes": 3,
+    "length": 4.0946,
+    "cutlength": 2.3712,
+    "ipt": {
+      "min": 0.007,
+      "max": 0.02
+    },
+    "sfm": {
+      "min": 913.0081,
+      "max": 1000
+    },
+    "indexable": true,
+    "coolant": false,
+    "air": false,
+    "cutcom": false
+  },
+  "314939": {
+    "type": "endmill",
+    "diameter": 3.0,
+    "flutes": 3,
+    "length": 3.0292,
+    "cutlength": 0.3566,
+    "ipt": {
+      "min": 0.0022,
+      "max": 0.0092
+    },
+    "sfm": {
+      "min": 620.8739,
+      "max": 1000
+    },
+    "indexable": true,
+    "coolant": false,
+    "air": true,
+    "cutcom": true
+  },
+  "854676": {
+    "type": "endmill",
+    "diameter": 0.375,
+    "flutes": 4,
+    "length": 6.657,
+    "cutlength": 2.6239,
+    "ipt": {
+      "min": 0.0077,
+      "max": 0.02
+    },
+    "sfm": {
+      "min": 55.8659,
+      "max": 126.392
+    },
+    "indexable": false,
+    "coolant": true,
+    "air": false,
+    "cutcom": false
+  },
+  "687621": {
+    "type": "endmill",
+    "diameter": 2.875,
+    "flutes": 5,
+    "length": 7.8287,
+    "cutlength": 1.5345,
+    "ipt": {
+      "min": 0.0058,
+      "max": 0.0072
+    },
+    "sfm": {
+      "min": 917.2112,
+      "max": 1000
+    },
+    "indexable": false,
+    "coolant": true,
+    "air": true,
+    "cutcom": false
+  },
+  "920596": {
+    "type": "endmill",
+    "diameter": 0.375,
+    "flutes": 2,
+    "length": 7.7528,
+    "cutlength": 2.7439,
+    "ipt": {
+      "min": 0.0014,
+      "max": 0.0034
+    },
+    "sfm": {
+      "min": 223.5393,
+      "max": 415.916
+    },
+    "indexable": false,
+    "coolant": false,
+    "air": false,
+    "cutcom": false
+  }
+}
