@@ -46,11 +46,8 @@ class Motion:
         """
         self.controller_os = controller_os
         self.tcode = tcode
-        self.rpm = self.calc_random_rpm()
-        self.feedrate = self.calc_random_feedrate()
-        self.size = random.randint(5, 20)
-
-    def calc_random_rpm(self) -> float:
+        
+    def _calc_random_rpm(self) -> float:
         """
         Calculates a random RPM (Rotations Per Minute) based on the given surface feet per minute (SFM) range and diameter.
 
@@ -66,7 +63,7 @@ class Motion:
         sfm = random.uniform(self.tcode["sfm"]["min"], self.tcode["sfm"]["max"])
         return round(sfm * 3.82 / self.tcode["diameter"], 2)
     
-    def calc_random_feedrate(self) -> float:
+    def _calc_random_feedrate(self, rpm) -> float:
         """
         Calculates a random feedrate based on the given inputs.
 
@@ -80,9 +77,9 @@ class Motion:
 
         """
         ipt = random.uniform(self.tcode["ipt"]["min"], self.tcode["ipt"]["max"])
-        return round(ipt * self.rpm, 2)
+        return round(ipt * rpm, 2)
 
-    def cutter_compensation(self) -> str:
+    def _cutter_compensation(self) -> str:
         """
         Determines whether (and how) to apply cutter compensation.
 
@@ -99,7 +96,7 @@ class Motion:
             return random.choice([None, "G41", "G42"])
         return None
     
-    def square(self) -> str:
+    def _square(self, size, cutcom, rpm, feedrate) -> str:
         """
         Generates a G-code sequence for creating a square with rounded corners.
 
@@ -107,15 +104,16 @@ class Motion:
             str: A string containing the complete G-code sequence for the operation.
 
         """
-        corner_radius = self.size / 5
-        cutcom = self.cutter_compensation()
+        corner_radius = size / 5
+
+        print("---square---")
 
         # Define points for G-code
         points = [
-            f"S{self.rpm} M3",  # Spindle on
+            f"S{rpm} M3",  # Spindle on
             f"G0 X0 Y-{self.APPROACH + corner_radius} Z3.0",  # Point 1
             "G0 Z0.1",  # Point 2
-            f"G1 Z0.0 F{round(self.feedrate * 1/random.randint(1,5), 2)}" # Point 3
+            f"G1 Z0.0 F{round(feedrate * 1/random.randint(1,5), 2)}" # Point 3
             ]  
         
         if cutcom is not None:
@@ -124,12 +122,12 @@ class Motion:
         points += [
             f"G1 Y-{corner_radius}",  # Point 4
             f"G2 X{corner_radius} Y0 I{corner_radius} J0",  # Point 5
-            f"G1 X{self.size - corner_radius} Y0 F{self.feedrate}",  # Point 6
-            f"G3 X{self.size} Y{corner_radius} I0 J{corner_radius}",  # Point 7
-            f"G1 X{self.size} Y{self.size - corner_radius}",  # Point 8
-            f"G3 X{self.size - corner_radius} Y{self.size} I-{corner_radius} J0",  # Point 9
-            f"G1 X{corner_radius} Y{self.size}",  # Point 10
-            f"G3 X0 Y{self.size - corner_radius} I0 J-{corner_radius}",  # Point 11
+            f"G1 X{size - corner_radius} Y0 F{feedrate}",  # Point 6
+            f"G3 X{size} Y{corner_radius} I0 J{corner_radius}",  # Point 7
+            f"G1 X{size} Y{size - corner_radius}",  # Point 8
+            f"G3 X{size - corner_radius} Y{size} I-{corner_radius} J0",  # Point 9
+            f"G1 X{corner_radius} Y{size}",  # Point 10
+            f"G3 X0 Y{size - corner_radius} I0 J-{corner_radius}",  # Point 11
             f"G1 X0 Y{corner_radius}",  # Point 12
             f"G3 X{corner_radius} Y0 I{corner_radius} J0",  # Point 13
             f"G2 X{corner_radius + self.RETRACT} Y-{self.RETRACT} I0 J-{self.RETRACT}",  # Point 14
@@ -144,67 +142,76 @@ class Motion:
 
         return '\n'.join(points)
     
-    def oval(self) -> str:
-            """
-            Generates a G-code sequence for creating an oval with rounded ends.
+    def _oval(self, size, cutcom, rpm, feedrate) -> str:
+        """
+        Generates a G-code sequence for creating an oval with rounded ends.
 
-            The oval is created by moving the cutter in a circular motion along the specified arc size.
-            The size of the oval is determined by the 'size' attribute of the object.
+        The oval is created by moving the cutter in a circular motion along the specified arc size.
+        The size of the oval is determined by the 'size' attribute of the object.
 
-            Returns:
-                str: A string containing the complete G-code sequence for the operation.
+        Args:
+            cutcom (str): The cutter compensation value to be used. If None, no cutter compensation will be applied.
 
-            """
-            arc_size = self.size / 2
-            cutcom = self.cutter_compensation()
+        Returns:
+            str: A string containing the complete G-code sequence for the operation.
 
-            # Define points for G-code
-            points = [
-                f"S{self.rpm} M3",  # Spindle on
-                f"G0 X-1.0 Y-2.0 Z3.0",  # Point 1
-                "G0 Z0.1",  # Point 2
-                f"G1 Z0.0 F{round(self.feedrate * 1/random.randint(1,5), 2)}" # Point 3
-                ]  
-            
-            if cutcom is not None:
-                points.append(cutcom)
+        """
+        arc_size = size / 2
 
-            points += [
-                f"G1 Y-1.0",  # Point 4
-                f"G2 X0 Y0 I1.0 J0",  # Point 5
-                f"G3 X{arc_size} Y{arc_size} I0 J{arc_size} F{self.feedrate}",  # Point 6
-                f"G1 Y{arc_size + 1}", # Point 7
-                f"G3 X0 Y{self.size + 1} I-{arc_size} J0",  # Point 8
-                f"G3 X-{arc_size} Y{arc_size + 1} I0 J-{arc_size}",  # Point 9
-                f"G1 Y{arc_size}",  # Point 10
-                f"G3 X0 Y0 I{arc_size} J0",  # Point 11
-                f"G2 X{self.RETRACT} Y-{self.RETRACT} I0 J-{self.RETRACT}"  # Point 12   
-            ]
+        print("---oval---")
 
-            # Turn off cutter compensation if it was used
-            if cutcom is not None:
-                points.append("G40")
+        # Define points for G-code
+        points = [
+            f"S{rpm} M3",  # Spindle on
+            f"G0 X-1.0 Y-2.0 Z3.0",  # Point 1
+            "G0 Z0.1",  # Point 2
+            f"G1 Z0.0 F{round(feedrate * 1/random.randint(1,5), 2)}" # Point 3
+            ]  
+        
+        if cutcom is not None:
+            points.append(cutcom)
 
-            # Retract Z
-            points.append("G0 Z3.0")
+        points += [
+            f"G1 Y-1.0",  # Point 4
+            f"G2 X0 Y0 I1.0 J0",  # Point 5
+            f"G3 X{arc_size} Y{arc_size} I0 J{arc_size} F{feedrate}",  # Point 6
+            f"G1 Y{arc_size + 1}", # Point 7
+            f"G3 X0 Y{size + 1} I-{arc_size} J0",  # Point 8
+            f"G3 X-{arc_size} Y{arc_size + 1} I0 J-{arc_size}",  # Point 9
+            f"G1 Y{arc_size}",  # Point 10
+            f"G3 X0 Y0 I{arc_size} J0",  # Point 11
+            f"G2 X{self.RETRACT} Y-{self.RETRACT} I0 J-{self.RETRACT}"  # Point 12   
+        ]
 
-            return '\n'.join(points)
+        # Turn off cutter compensation if it was used
+        if cutcom is not None:
+            points.append("G40")
+
+        # Retract Z
+        points.append("G0 Z3.0")
+
+        return '\n'.join(points)
     
-def run(controller_os: str, tcode: dict):
-    """
-    Create a Motion object and randomly execute one of its methods.
+    def _triangle(self, size, cutcom, rpm, feedrate) -> str:
+        print("---triangle---")
+        return ""
+    
+    def generate_random_motion(self):
+        """
+        Randomly execute one of the motion methods (square or oval).
 
-    This function initializes a Motion object with the specified controller operating 
-    system and tcode dictionary. It then randomly selects and executes either the 
-    `square` or `oval` method of the Motion object.
+        This method selects either the `square` or `oval` method of the Motion object
+        and executes it.
 
-    Parameters:
-    controller_os (str): The operating system of the controller.
-    tcode (dict): A dictionary containing tcode data.
+        Returns:
+            The result of the executed Motion method, which could be the `square`, `oval`, 
+            or 'triangle' method.
 
-    Returns:
-    The result of the executed Motion method, which could be the `square` or `oval` method.
-    """
-    motion = Motion(controller_os=controller_os, tcode=tcode)
-    chosen_motion_method = random.choice([motion.square, motion.oval])
-    return chosen_motion_method()
+        """
+        rpm = self._calc_random_rpm()
+        feedrate = self._calc_random_feedrate(rpm)
+        random_motion_method = random.choice([self._square, self._oval, self._triangle])
+        return random_motion_method(size=random.randint(5, 20), 
+                                    cutcom=self._cutter_compensation(), 
+                                    rpm=rpm, 
+                                    feedrate=feedrate)
