@@ -61,39 +61,88 @@ class Motion:
         return None
     
     def square(self) -> str:
+        """
+        Generates a G-code sequence for creating a square with rounded corners.
+
+        Returns:
+            str: A string containing the complete G-code sequence for the operation.
+
+        """
+        corner_radius = self.size / 5
+        cutcom = self.cutter_compensation()
+
+        # Define points for G-code
+        points = [
+            f"S{self.rpm} M3",  # Spindle on
+            f"G0 X0 Y-{APPROACH + corner_radius} Z3.0",  # Point 1
+            "G0 Z0.1",  # Point 2
+            f"G1 Z0.0 F{round(self.feedrate * 1/random.randint(1,5), 2)}" # Point 3
+            ]  
+        
+        if cutcom is not None:
+            points.append(cutcom)
+
+        points += [
+            f"G1 Y-{corner_radius}",  # Point 4
+            f"G2 X{corner_radius} Y0 I{corner_radius} J0",  # Point 5
+            f"G1 X{self.size - corner_radius} Y0 F{self.feedrate}",  # Point 6
+            f"G3 X{self.size} Y{corner_radius} I0 J{corner_radius}",  # Point 7
+            f"G1 X{self.size} Y{self.size - corner_radius}",  # Point 8
+            f"G3 X{self.size - corner_radius} Y{self.size} I-{corner_radius} J0",  # Point 9
+            f"G1 X{corner_radius} Y{self.size}",  # Point 10
+            f"G3 X0 Y{self.size - corner_radius} I0 J-{corner_radius}",  # Point 11
+            f"G1 X0 Y{corner_radius}",  # Point 12
+            f"G3 X{corner_radius} Y0 I{corner_radius} J0",  # Point 13
+            f"G2 X{corner_radius + RETRACT} Y-{RETRACT} I0 J-{RETRACT}",  # Point 14
+        ]
+
+        # Turn off cutter compensation if it was used
+        if cutcom is not None:
+            points.append("G40")
+
+        # Retract Z
+        points.append("G0 Z3.0")
+
+        # temporary
+        print("square")
+
+        return '\n'.join(points)
+    
+    def oval(self) -> str:
             """
-            Generates a G-code sequence for creating a square with rounded corners.
+            Generates a G-code sequence for creating an oval with rounded ends.
+
+            The oval is created by moving the cutter in a circular motion along the specified arc size.
+            The size of the oval is determined by the 'size' attribute of the object.
 
             Returns:
                 str: A string containing the complete G-code sequence for the operation.
 
             """
-            corner_radius = self.size / 5
+            arc_size = self.size / 2
             cutcom = self.cutter_compensation()
 
             # Define points for G-code
             points = [
                 f"S{self.rpm} M3",  # Spindle on
-                f"G0 X0 Y-{APPROACH + corner_radius} Z3.0",  # Point 1
+                f"G0 X-1.0 Y-2.0 Z3.0",  # Point 1
                 "G0 Z0.1",  # Point 2
                 f"G1 Z0.0 F{round(self.feedrate * 1/random.randint(1,5), 2)}" # Point 3
-              ]  
+                ]  
             
             if cutcom is not None:
                 points.append(cutcom)
 
             points += [
-                f"G1 Y-{corner_radius}",  # Point 4
-                f"G2 X{corner_radius} Y0 I{corner_radius} J0",  # Point 5
-                f"G1 X{self.size - corner_radius} Y0 F{self.feedrate}",  # Point 6
-                f"G3 X{self.size} Y{corner_radius} I0 J{corner_radius}",  # Point 7
-                f"G1 X{self.size} Y{self.size - corner_radius}",  # Point 8
-                f"G3 X{self.size - corner_radius} Y{self.size} I-{corner_radius} J0",  # Point 9
-                f"G1 X{corner_radius} Y{self.size}",  # Point 10
-                f"G3 X0 Y{self.size - corner_radius} I0 J-{corner_radius}",  # Point 11
-                f"G1 X0 Y{corner_radius}",  # Point 12
-                f"G3 X{corner_radius} Y0 I{corner_radius} J0",  # Point 13
-                f"G2 X{corner_radius + RETRACT} Y-{RETRACT} I0 J-{RETRACT}",  # Point 14
+                f"G1 Y-1.0",  # Point 4
+                f"G2 X0 Y0 I1.0 J0",  # Point 5
+                f"G3 X{arc_size} Y{arc_size} I0 J{arc_size} F{self.feedrate}",  # Point 6
+                f"G1 Y{arc_size + 1}", # Point 7
+                f"G3 X0 Y{self.size + 1} I-{arc_size} J0",  # Point 8
+                f"G3 X-{arc_size} Y{arc_size + 1} I0 J-{arc_size}",  # Point 9
+                f"G1 Y{arc_size}",  # Point 10
+                f"G3 X0 Y0 I{arc_size} J0",  # Point 11
+                f"G2 X{RETRACT} Y-{RETRACT} I0 J-{RETRACT}"  # Point 12   
             ]
 
             # Turn off cutter compensation if it was used
@@ -103,8 +152,12 @@ class Motion:
             # Retract Z
             points.append("G0 Z3.0")
 
+            # temporary
+            print("oval")
+
             return '\n'.join(points)
     
 def run_generator(controller_os: str, tool: dict):
     motion = Motion(controller_os=controller_os, tool=tool)
-    return random.choice([motion.square()])
+    chosen_motion = random.choice([motion.square, motion.oval])
+    return chosen_motion()
