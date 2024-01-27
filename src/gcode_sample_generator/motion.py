@@ -1,12 +1,51 @@
 import random
 
-APPROACH = 1.0
-RETRACT = 0.250
-
 class Motion:
-    def __init__(self, controller_os: str, tool: dict) -> None:
+    """
+    Represents a motion controller for machining operations.
+
+    This class provides functionalities to generate G-code sequences for different
+    shapes (e.g., square, oval) with configurable parameters. It initializes with 
+    specific settings for the controller's operating system and tool code (tcode), 
+    and calculates random values for revolutions per minute (RPM), feedrate, and size 
+    based on the tcode.
+
+    Attributes:
+        controller_os (str): The type of operating system used by the controller.
+        tcode (dict): A dictionary containing tool-specific code data, including 
+                      parameters for RPM and feedrate calculations.
+        rpm (float): Calculated random RPM value for the operation.
+        feedrate (float): Calculated random feedrate for the operation.
+        size (int): A random size value used in shape generation.
+
+    Methods:
+        calc_random_rpm: Calculates a random RPM based on the tcode's SFM range and diameter.
+        calc_random_feedrate: Calculates a random feedrate based on the tcode's IPT range and RPM.
+        cutter_compensation: Determines cutter compensation (if any) based on the tool's capabilities.
+        square: Generates a G-code sequence for a square shape with configurable parameters.
+        oval: Generates a G-code sequence for an oval shape with configurable parameters.
+    """
+    APPROACH = 1.0
+    RETRACT = 0.250
+
+    def __init__(self, controller_os: str, tcode: dict) -> None:
+        """
+        Initialize the Motion object with controller operating system, tool code data,
+        and randomly calculated parameters.
+
+        Args:
+            controller_os (str): The operating system of the controller.
+            tcode (dict): A dictionary containing tool-specific code data.
+
+        Attributes:
+            controller_os (str): Operating system of the controller.
+            tcode (dict): Tool-specific code data.
+            rpm (float): Randomly calculated RPM.
+            feedrate (float): Randomly calculated feedrate.
+            size (int): Randomly determined size value for operations.
+        """
         self.controller_os = controller_os
-        self.tool = tool
+        self.tcode = tcode
         self.rpm = self.calc_random_rpm()
         self.feedrate = self.calc_random_feedrate()
         self.size = random.randint(5, 20)
@@ -24,8 +63,8 @@ class Motion:
             float: The calculated random RPM.
 
         """
-        sfm = random.uniform(self.tool["sfm"]["min"], self.tool["sfm"]["max"])
-        return round(sfm * 3.82 / self.tool["diameter"], 2)
+        sfm = random.uniform(self.tcode["sfm"]["min"], self.tcode["sfm"]["max"])
+        return round(sfm * 3.82 / self.tcode["diameter"], 2)
     
     def calc_random_feedrate(self) -> float:
         """
@@ -40,7 +79,7 @@ class Motion:
             float: The calculated feedrate.
 
         """
-        ipt = random.uniform(self.tool["ipt"]["min"], self.tool["ipt"]["max"])
+        ipt = random.uniform(self.tcode["ipt"]["min"], self.tcode["ipt"]["max"])
         return round(ipt * self.rpm, 2)
 
     def cutter_compensation(self) -> str:
@@ -56,7 +95,7 @@ class Motion:
                 or an empty string if no compensation is to be applied.
 
         """
-        if self.tool["cutcom"]:
+        if self.tcode["cutcom"]:
             return random.choice([None, "G41", "G42"])
         return None
     
@@ -74,7 +113,7 @@ class Motion:
         # Define points for G-code
         points = [
             f"S{self.rpm} M3",  # Spindle on
-            f"G0 X0 Y-{APPROACH + corner_radius} Z3.0",  # Point 1
+            f"G0 X0 Y-{self.APPROACH + corner_radius} Z3.0",  # Point 1
             "G0 Z0.1",  # Point 2
             f"G1 Z0.0 F{round(self.feedrate * 1/random.randint(1,5), 2)}" # Point 3
             ]  
@@ -93,7 +132,7 @@ class Motion:
             f"G3 X0 Y{self.size - corner_radius} I0 J-{corner_radius}",  # Point 11
             f"G1 X0 Y{corner_radius}",  # Point 12
             f"G3 X{corner_radius} Y0 I{corner_radius} J0",  # Point 13
-            f"G2 X{corner_radius + RETRACT} Y-{RETRACT} I0 J-{RETRACT}",  # Point 14
+            f"G2 X{corner_radius + self.RETRACT} Y-{self.RETRACT} I0 J-{self.RETRACT}",  # Point 14
         ]
 
         # Turn off cutter compensation if it was used
@@ -102,9 +141,6 @@ class Motion:
 
         # Retract Z
         points.append("G0 Z3.0")
-
-        # temporary
-        print("square")
 
         return '\n'.join(points)
     
@@ -142,7 +178,7 @@ class Motion:
                 f"G3 X-{arc_size} Y{arc_size + 1} I0 J-{arc_size}",  # Point 9
                 f"G1 Y{arc_size}",  # Point 10
                 f"G3 X0 Y0 I{arc_size} J0",  # Point 11
-                f"G2 X{RETRACT} Y-{RETRACT} I0 J-{RETRACT}"  # Point 12   
+                f"G2 X{self.RETRACT} Y-{self.RETRACT} I0 J-{self.RETRACT}"  # Point 12   
             ]
 
             # Turn off cutter compensation if it was used
@@ -152,12 +188,23 @@ class Motion:
             # Retract Z
             points.append("G0 Z3.0")
 
-            # temporary
-            print("oval")
-
             return '\n'.join(points)
     
-def run_generator(controller_os: str, tool: dict):
-    motion = Motion(controller_os=controller_os, tool=tool)
-    chosen_motion = random.choice([motion.square, motion.oval])
-    return chosen_motion()
+def run(controller_os: str, tcode: dict):
+    """
+    Create a Motion object and randomly execute one of its methods.
+
+    This function initializes a Motion object with the specified controller operating 
+    system and tcode dictionary. It then randomly selects and executes either the 
+    `square` or `oval` method of the Motion object.
+
+    Parameters:
+    controller_os (str): The operating system of the controller.
+    tcode (dict): A dictionary containing tcode data.
+
+    Returns:
+    The result of the executed Motion method, which could be the `square` or `oval` method.
+    """
+    motion = Motion(controller_os=controller_os, tcode=tcode)
+    chosen_motion_method = random.choice([motion.square, motion.oval])
+    return chosen_motion_method()
