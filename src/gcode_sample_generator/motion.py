@@ -210,7 +210,7 @@ class Motion:
         """
         rpm = self._calc_random_rpm()
         feedrate = self._calc_random_feedrate(rpm)
-        random_motion_method = random.choice([self._square, self._oval, self._triangle])
+        random_motion_method = random.choice([self._square, self._oval])
         return random_motion_method(size=random.randint(5, 20), 
                                     cutcom=self._cutter_compensation(), 
                                     rpm=rpm, 
