@@ -24,6 +24,7 @@ class GCodeSampleGenerator:
         self.machineid = self._get_machineid()
         self.controller_os = self._get_controller_os()
         self.tcodes = self._get_tcodes()
+        self.number_of_sequences = self._get_number_of_sequences()
 
     def _get_machineid(self) -> int:
         """
@@ -67,17 +68,29 @@ class GCodeSampleGenerator:
         keys = random.sample(list(all_tools.keys()), num_keys)
         return {key: all_tools[key] for key in keys}
     
+    def _get_number_of_sequences(self) -> int:
+        """
+        Generates a random number of sequences for the G-code sample. This method simulates the 
+        selection of different sequences that are used in CNC machining.
+
+        Returns:
+            int: A randomly selected number of sequences, which could be between 1 and 10.
+        """
+        return random.randint(1, len(self.tcodes))
+    
     def print_summary(self):
         """
         Prints a summary of the current state of the class attributes. This includes the
         controller operating system, machine identifier, and a summary of the tool codes.
         """
-        print("GCode Sample Generator Summary:")
+        print("-----GCode Sample Generator Summary-----")
         print(f"Machine ID: {self.machineid}")
         print(f"Controller OS: {self.controller_os}")
+        print(f"Number of Sequences: {self.number_of_sequences}")
         print(f"Tool Codes: {len(self.tcodes)}")
         for tcode, details in self.tcodes.items():
             print(f"  {tcode}")
+        
 
 def run():
 
@@ -91,8 +104,6 @@ def run():
 
     gcode = GCodeSampleGenerator()
     gcode.print_summary()
-
-    print("debug")
 
 if __name__ == "__main__":
     run()
