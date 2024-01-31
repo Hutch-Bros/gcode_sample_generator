@@ -44,7 +44,7 @@ class GCodeSampleGenerator:
         Returns:
             str: A randomly selected controller operating system, either 'fanuc' or 'siemens'.
         """
-        return random.choice(["fanuc", "siemens"])
+        return random.choice(["grbl"])
     
     def _get_tcodes(self) -> dict:
         """
