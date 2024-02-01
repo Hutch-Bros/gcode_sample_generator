@@ -244,12 +244,32 @@ class GCodeSampleGenerator:
         for tcode, details in self.tcodes.items():
             print(f"  {tcode}")
         
+def output_gcode(gcode):
+    """
+    Outputs the generated G-code to a file.
+
+    This function writes the provided G-code to a file with a filename based on the current date and time. The file is saved in the 'output' directory within the current working directory.
+
+    Args:
+        gcode (str): The G-code to be written to the file.
+    """
+    output_dir = os.path.join(os.path.dirname(__file__), '..', 'output')
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    filename = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".nc"
+    file_path = os.path.join(output_dir, filename)
+
+    with open(file_path, 'w', encoding='utf-8') as file:
+        file.write('\n'.join(gcode))
+
+    print(f"Generated G-code has been saved to: {file_path}")
+
 
 def run():
 
     generated_gcode = GCodeSampleGenerator()
-    # gcode.print_summary()
-    print(generated_gcode.gcode)
+    output_gcode(generated_gcode.gcode)
 
 if __name__ == "__main__":
     run()
