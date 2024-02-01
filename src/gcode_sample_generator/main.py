@@ -1,7 +1,8 @@
 import os
 import json
 import random
-from motion import Motion
+from datetime import datetime
+from sequence import SeqGenerator
 
 
 class GCodeSampleGenerator:
@@ -21,11 +22,33 @@ class GCodeSampleGenerator:
         the controller operating system, machine identifier, and tool codes for the instance
         by invoking respective private methods.
         """
+        self.fileid = random.randint(1000000, 9999999)
+        self.partnum = self._get_partnum()
         self.machineid = self._get_machineid()
-        self.controller_os = self._get_controller_os()
+        self.revisionid = 1.0
+        self.revisiondate = datetime.now().strftime("%m-%d-%Y")
+        self.revisiontime = datetime.now().strftime("%I:%M:%S%p").lower()
+        self.controlleros = self._get_controlleros()
         self.tcodes = self._get_tcodes()
         self.number_of_sequences = self._get_number_of_sequences()
+        self._last_nblock = 0
+        # self.gcode = self._generate_gcode()
 
+    def _get_partnum(self) -> str:
+        """
+        Generates a random part number consisting of a three-digit number, a middle letter,
+        a four-digit number, and a dash followed by a single-digit number.
+
+        Returns:
+            str: The randomly generated part number.
+        """
+        first_3_nums = random.randint(100, 999)
+        middle_letter = random.choice(["A", "B", "C", "D", "E", "F", "G", "H", "I", "J"])
+        last_4_nums = random.randint(1000, 9999)
+        dash_num = random.randint(1, 9)
+
+        return f"{first_3_nums}{middle_letter}{last_4_nums}-{dash_num}"
+    
     def _get_machineid(self) -> int:
         """
         Generates a random machine identifier (ID) from a predefined list. This ID represents 
@@ -36,7 +59,7 @@ class GCodeSampleGenerator:
         """
         return random.choice([1, 2, 3])
 
-    def _get_controller_os(self) -> str:
+    def _get_controlleros(self) -> str:
         """
         Selects a random controller operating system from a predefined list. This simulates 
         the different types of operating systems used in CNC controllers.
@@ -76,7 +99,131 @@ class GCodeSampleGenerator:
         Returns:
             int: A randomly selected number of sequences, which could be between 1 and 10.
         """
-        return random.randint(1, len(self.tcodes))
+        max_sequences = len(self.tcodes) + random.randint(0, 5)
+        return random.randint(len(self.tcodes), max_sequences)
+    
+    def _nblock_prefix(self, gcodes) -> str:
+        """
+        Prepends each G-code command in the provided list with an N-block number.
+
+        This method iterates through the given list of G-code commands and prefixes each command with an N-block number. The N-block number is generated sequentially, starting from the current value of `self._last_nblock` and incrementing it for each command. 
+
+        The purpose of the N-block numbering is to provide a unique identifier for each line of G-code, which can be useful for debugging or referencing specific commands within the CNC program.
+
+        Args:
+            gcodes (List[str]): A list of G-code commands to be prefixed with N-block numbers.
+
+        Returns:
+            List[str]: The list of G-code commands, each prefixed with a unique N-block number.
+
+        Note:
+            This method modifies `self._last_nblock` by incrementing it with each command processed. The initial value of `self._last_nblock` should be set appropriately before calling this method.
+        """
+        for i in range(len(gcodes)):
+            self._last_nblock += 1 
+            gcodes[i] = f'N{self._last_nblock} {gcodes[i]}'
+        return gcodes
+    
+    def _add_line_breaks(self, gcodes) -> str:
+        """
+        Adds line breaks to the given list of G-code commands.
+
+        This method iterates through the given list of G-code commands and appends a line break character to each command. The line break character is used to separate each command and ensure that the G-code program is formatted correctly.
+
+        Args:
+            gcodes (List[str]): A list of G-code commands to be formatted with line breaks.
+
+        Returns:
+            str: A string containing the G-code commands, each separated by a line break.
+
+        """
+        return '\n'.join(gcodes)
+    
+    def _generate_header(self) -> str:
+        """
+        Generates a header string for CNC machine programming based on the specified controller OS.
+
+        This method constructs the header by aggregating metadata and startup codes specific to the controller OS. The metadata includes details like file ID, part number, file number, revision ID, revision date, revision time, author ID, machine ID, and controller OS. The startup codes are tailored to the controller OS used in the CNC machine.
+
+        For 'grbl' controllers, the method includes specific program start and machine start sequences. For 'fanuc' and 'siemens' controllers, this method currently returns None, indicating a placeholder for future implementation.
+
+        The method uses an internal counter to track the last NBlock sequence number after adding program starts.
+
+        Returns:
+            str: A string containing the formatted header for the CNC program, tailored to the specific controller OS. Returns None for 'fanuc', 'siemens', and other unspecified controller OS types.
+
+        Note:
+            This method relies on internal attributes such as fileid, partnum, revisionid, revisiondate, revisiontime, and controlleros, which should be set prior to calling this method.
+        """
+
+        header_meta = [
+                    f"(@@ meta_fileid = {self.fileid})",
+                    f"(@@ meta_partnum = {self.partnum})",
+                    f"(@@ meta_filenum = 1)",
+                    f"(@@ meta_revisionid = {self.revisionid})",
+                    f"(@@ meta_revisiondate = {self.revisiondate})",
+                    f"(@@ meta_revisiontime = {self.revisiontime})",
+                    f"(@@ meta_authorid = 1)",
+                    f"(@@ meta_machineid = 1)",
+                    f"(@@ meta_controlleros = {self.controlleros})",
+                ]
+
+        match self.controlleros:
+            case "grbl":
+                # no nblock
+                program_starts = [
+                    "%",
+                ]
+                # startup codes
+                machine_starts = [
+                    "G90 G94 G17 G49 G40 G80",
+                    "G20",
+                    "G28 G91 Z0.",
+                    "G90",
+                ]
+
+                # Start the NBlock sequence after the program_starts
+                self._last_nblock = len(program_starts)
+                header = self._nblock_prefix(header_meta + machine_starts)
+                return self._add_line_breaks(program_starts + header)
+            case "fanuc":
+                return None
+            case "siemens":
+                return None
+            case _:
+                return None
+    
+    def _generate_sequences(self) -> str:
+
+        seqno_tools = list(self.tcodes.keys())
+
+        # If there are more sequences than tcodes, assign remaining sequences randomly
+        while len(seqno_tools) < self.number_of_sequences:
+            seqno_tools.append(random.choice(list(self.tcodes.keys())))
+
+        seqno = 1
+        for seqno_tool in seqno_tools:
+            print(f"Seq {seqno} uses {seqno_tool}")
+            seqno += 1
+            test = SeqGenerator(self.tcodes[seqno_tool])
+            print(test.generate_random_motion())
+
+        
+        print("debug")
+    
+    def generate_gcode(self):
+
+        self._generate_sequences()
+
+        generated_gcode = [
+            self._generate_header(),
+            "M30"
+        ]
+
+        print(self._add_line_breaks(generated_gcode))
+        
+
+        print("debug")
     
     def print_summary(self):
         """
@@ -85,7 +232,7 @@ class GCodeSampleGenerator:
         """
         print("-----GCode Sample Generator Summary-----")
         print(f"Machine ID: {self.machineid}")
-        print(f"Controller OS: {self.controller_os}")
+        print(f"Controller OS: {self.controlleros}")
         print(f"Number of Sequences: {self.number_of_sequences}")
         print(f"Tool Codes: {len(self.tcodes)}")
         for tcode, details in self.tcodes.items():
@@ -103,7 +250,8 @@ def run():
     # 6. Save the generated motion to a new G-code file
 
     gcode = GCodeSampleGenerator()
-    gcode.print_summary()
+    # gcode.print_summary()
+    gcode.generate_gcode()
 
 if __name__ == "__main__":
     run()
