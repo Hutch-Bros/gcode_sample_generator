@@ -147,5 +147,8 @@ dmypy.json
 # pytype static type analyzer
 .pytype/
 
+# Outputs
+output/
+
 
 
