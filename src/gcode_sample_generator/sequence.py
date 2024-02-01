@@ -28,7 +28,7 @@ class SeqGenerator:
     APPROACH = 1.0
     RETRACT = 0.250
 
-    def __init__(self, tcode: dict) -> None:
+    def __init__(self, tcodeid: str, tcode_params: dict) -> None:
         """
         Initialize the Motion object with controller operating system, tool code data,
         and randomly calculated parameters.
@@ -44,7 +44,8 @@ class SeqGenerator:
             feedrate (float): Randomly calculated feedrate.
             size (int): Randomly determined size value for operations.
         """
-        self.tcode = tcode
+        self.tcodeid = tcodeid
+        self.tcode_params = tcode_params
         
     def _calc_random_rpm(self) -> float:
         """
@@ -59,8 +60,8 @@ class SeqGenerator:
             float: The calculated random RPM.
 
         """
-        sfm = random.uniform(self.tcode["sfm"]["min"], self.tcode["sfm"]["max"])
-        return round(sfm * 3.82 / self.tcode["diameter"], 2)
+        sfm = random.uniform(self.tcode_params["sfm"]["min"], self.tcode_params["sfm"]["max"])
+        return round(sfm * 3.82 / self.tcode_params["diameter"], 2)
     
     def _calc_random_feedrate(self, rpm) -> float:
         """
@@ -75,7 +76,7 @@ class SeqGenerator:
             float: The calculated feedrate.
 
         """
-        ipt = random.uniform(self.tcode["ipt"]["min"], self.tcode["ipt"]["max"])
+        ipt = random.uniform(self.tcode_params["ipt"]["min"], self.tcode_params["ipt"]["max"])
         return round(ipt * rpm, 2)
 
     def _cutter_compensation(self) -> str:
@@ -91,7 +92,7 @@ class SeqGenerator:
                 or an empty string if no compensation is to be applied.
 
         """
-        if self.tcode["cutcom"]:
+        if self.tcode_params["cutcom"]:
             return random.choice([None, "G41", "G42"])
         return None
     
@@ -105,41 +106,42 @@ class SeqGenerator:
         """
         corner_radius = size / 5
 
-        print("---square---")
+        seq_name = f"Draw Square -- Size: {size}in, Corners: {corner_radius}in)"
 
-        # Define points for G-code
-        points = [
-            f"S{rpm} M3",  # Spindle on
-            f"G0 X0 Y-{self.APPROACH + corner_radius} Z3.0",  # Point 1
-            "G0 Z0.1",  # Point 2
-            f"G1 Z0.0 F{round(feedrate * 1/random.randint(1,5), 2)}" # Point 3
-            ]  
+        gcode = [
+            f"(@@ seq_name = {seq_name})",
+            f"T{self.tcodeid} M6",
+            f"S{rpm} M3",
+            f"G0 X0 Y-{self.APPROACH + corner_radius} Z3.0",
+            "G0 Z0.1",
+            f"G1 Z0.0 F{round(feedrate * 1/random.randint(1,5), 2)}"
+        ]             
         
         if cutcom is not None:
-            points.append(cutcom)
+            gcode.append(cutcom)
 
-        points += [
-            f"G1 Y-{corner_radius}",  # Point 4
-            f"G2 X{corner_radius} Y0 I{corner_radius} J0",  # Point 5
-            f"G1 X{size - corner_radius} Y0 F{feedrate}",  # Point 6
-            f"G3 X{size} Y{corner_radius} I0 J{corner_radius}",  # Point 7
-            f"G1 X{size} Y{size - corner_radius}",  # Point 8
-            f"G3 X{size - corner_radius} Y{size} I-{corner_radius} J0",  # Point 9
-            f"G1 X{corner_radius} Y{size}",  # Point 10
-            f"G3 X0 Y{size - corner_radius} I0 J-{corner_radius}",  # Point 11
-            f"G1 X0 Y{corner_radius}",  # Point 12
-            f"G3 X{corner_radius} Y0 I{corner_radius} J0",  # Point 13
-            f"G2 X{corner_radius + self.RETRACT} Y-{self.RETRACT} I0 J-{self.RETRACT}",  # Point 14
+        gcode += [
+            f"G1 Y-{corner_radius}",
+            f"G2 X{corner_radius} Y0 I{corner_radius} J0",
+            f"G1 X{size - corner_radius} Y0 F{feedrate}",
+            f"G3 X{size} Y{corner_radius} I0 J{corner_radius}",
+            f"G1 X{size} Y{size - corner_radius}",
+            f"G3 X{size - corner_radius} Y{size} I-{corner_radius} J0",
+            f"G1 X{corner_radius} Y{size}",
+            f"G3 X0 Y{size - corner_radius} I0 J-{corner_radius}",
+            f"G1 X0 Y{corner_radius}",
+            f"G3 X{corner_radius} Y0 I{corner_radius} J0",
+            f"G2 X{corner_radius + self.RETRACT} Y-{self.RETRACT} I0 J-{self.RETRACT}",
         ]
 
         # Turn off cutter compensation if it was used
         if cutcom is not None:
-            points.append("G40")
+            gcode.append("G40")
 
         # Retract Z
-        points.append("G0 Z3.0")
+        gcode.append("G0 Z3.0")
 
-        return '\n'.join(points)
+        return gcode
     
     def _oval(self, size, cutcom, rpm, feedrate) -> str:
         """
@@ -157,20 +159,19 @@ class SeqGenerator:
         """
         arc_size = size / 2
 
-        print("---oval---")
+        seq_name = f"Draw Oval -- Size: {size}in, Arcsize: {arc_size}in"
 
-        # Define points for G-code
-        points = [
-            f"S{rpm} M3",  # Spindle on
-            f"G0 X-1.0 Y-2.0 Z3.0",  # Point 1
-            "G0 Z0.1",  # Point 2
-            f"G1 Z0.0 F{round(feedrate * 1/random.randint(1,5), 2)}" # Point 3
+        gcode = [
+            f"(@@ seq_name = {seq_name})",
+            f"T{self.tcodeid} M6",
+            f"S{rpm} M3",
+            f"G0 X-1.0 Y-2.0 Z3.0",
+            "G0 Z0.1",
+            f"G1 Z0.0 F{round(feedrate * 1/random.randint(1,5), 2)}"
             ]  
-        
         if cutcom is not None:
-            points.append(cutcom)
-
-        points += [
+            gcode.append(cutcom)
+        gcode += [
             f"G1 Y-1.0",  # Point 4
             f"G2 X0 Y0 I1.0 J0",  # Point 5
             f"G3 X{arc_size} Y{arc_size} I0 J{arc_size} F{feedrate}",  # Point 6
@@ -181,15 +182,12 @@ class SeqGenerator:
             f"G3 X0 Y0 I{arc_size} J0",  # Point 11
             f"G2 X{self.RETRACT} Y-{self.RETRACT} I0 J-{self.RETRACT}"  # Point 12   
         ]
-
         # Turn off cutter compensation if it was used
         if cutcom is not None:
-            points.append("G40")
-
+            gcode.append("G40")
         # Retract Z
-        points.append("G0 Z3.0")
-
-        return '\n'.join(points)
+        gcode.append("G0 Z3.0")
+        return gcode
     
     def _triangle(self, size, cutcom, rpm, feedrate) -> str:
         print("---triangle---")
