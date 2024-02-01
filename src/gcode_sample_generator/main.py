@@ -12,15 +12,22 @@ class GCodeSampleGenerator:
     machine identifiers, and tool codes typically used in CNC operations.
 
     Attributes:
-        controller_os (str): The controller operating system used in CNC machining.
-        machineid (int): An identifier for the CNC machine.
+        fileid (int): Unique file identifier for the G-code.
+        partnum (str): Part number associated with the G-code.
+        machineid (int): Identifier for the CNC machine.
+        revisionid (float): Revision identifier for the G-code.
+        revisiondate (str): Date of the G-code revision.
+        revisiontime (str): Time of the G-code revision.
+        controlleros (str): The controller operating system used in CNC machining.
         tcodes (dict): A collection of tool codes representing different cutting tools.
+        number_of_sequences (int): The number of sequences in the G-code.
+        gcode (list): The generated G-code commands.
     """
     def __init__(self):
         """
         Initializes a new instance of GCodeSampleGenerator. This method automatically sets up
-        the controller operating system, machine identifier, and tool codes for the instance
-        by invoking respective private methods.
+        various attributes such as file identifier, part number, machine identifier, revision details, 
+        controller operating system, tool codes, number of sequences, and generates the G-code.
         """
         self.fileid = random.randint(1000000, 9999999)
         self.partnum = self._get_partnum()
@@ -219,8 +226,16 @@ class GCodeSampleGenerator:
 
         return seq_gcode
     
-    def _generate_gcode(self):
-        
+    def _generate_gcode(self) -> list:
+        """
+        Generates the complete G-code for CNC machining.
+
+        This method combines the file start, header, sequences, and file end into a complete G-code program.
+        It includes NBlock numbering for each command and ensures the correct format for the CNC machine.
+
+        Returns:
+            list: A list of G-code commands representing the complete CNC program.
+        """
         no_nblock = self._generate_file_start()
         with_nblock = self._generate_header() + self._generate_sequences() + ["M30"]
 
@@ -233,8 +248,9 @@ class GCodeSampleGenerator:
     
     def print_summary(self):
         """
-        Prints a summary of the current state of the class attributes. This includes the
-        controller operating system, machine identifier, and a summary of the tool codes.
+        Prints a summary of the current state of the class attributes. This method provides an overview 
+        of the generated G-code, including details like the machine identifier, controller operating system, 
+        number of sequences, and a summary of the tool codes used.
         """
         print("-----GCode Sample Generator Summary-----")
         print(f"Machine ID: {self.machineid}")
@@ -262,7 +278,6 @@ def output_gcode(fileid, gcode):
 
     with open(file_path, 'w', encoding='utf-8') as file:
         file.write('\n'.join(gcode))
-
 
 def run():
 
