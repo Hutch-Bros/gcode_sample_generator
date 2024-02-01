@@ -61,7 +61,7 @@ class SeqGenerator:
 
         """
         sfm = random.uniform(self.tcode_params["sfm"]["min"], self.tcode_params["sfm"]["max"])
-        return round(sfm * 3.82 / self.tcode_params["diameter"], 2)
+        return int(round(sfm * 3.82 / self.tcode_params["diameter"], 0))
     
     def _calc_random_feedrate(self, rpm) -> float:
         """
