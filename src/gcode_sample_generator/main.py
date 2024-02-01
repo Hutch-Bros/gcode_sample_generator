@@ -244,7 +244,7 @@ class GCodeSampleGenerator:
         for tcode, details in self.tcodes.items():
             print(f"  {tcode}")
         
-def output_gcode(gcode):
+def output_gcode(fileid, gcode):
     """
     Outputs the generated G-code to a file.
 
@@ -257,19 +257,17 @@ def output_gcode(gcode):
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    filename = datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".nc"
+    filename = str(fileid) + "_" + datetime.now().strftime("%d-%m-%Y_%H%M%S") + ".nc"
     file_path = os.path.join(output_dir, filename)
 
     with open(file_path, 'w', encoding='utf-8') as file:
         file.write('\n'.join(gcode))
 
-    print(f"Generated G-code has been saved to: {file_path}")
-
 
 def run():
 
     generated_gcode = GCodeSampleGenerator()
-    output_gcode(generated_gcode.gcode)
+    output_gcode(generated_gcode.fileid, generated_gcode.gcode)
 
 if __name__ == "__main__":
     run()
