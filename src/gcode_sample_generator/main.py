@@ -31,8 +31,7 @@ class GCodeSampleGenerator:
         self.controlleros = self._get_controlleros()
         self.tcodes = self._get_tcodes()
         self.number_of_sequences = self._get_number_of_sequences()
-        self._last_nblock = 0
-        # self.gcode = self._generate_gcode()
+        self.gcode = self._generate_gcode()
 
     def _get_partnum(self) -> str:
         """
@@ -139,6 +138,22 @@ class GCodeSampleGenerator:
         """
         return '\n'.join(gcodes)
     
+    def _generate_file_start(self) -> list:
+
+        match self.controlleros:
+            case "grbl":
+                # startup codes
+                gcode_file_start = [
+                    "%",
+                ]
+                return gcode_file_start
+            case "fanuc":
+                return None
+            case "siemens":
+                return None
+            case _:
+                return None
+    
     def _generate_header(self) -> str:
         """
         Generates a header string for CNC machine programming based on the specified controller OS.
@@ -170,22 +185,14 @@ class GCodeSampleGenerator:
 
         match self.controlleros:
             case "grbl":
-                # no nblock
-                program_starts = [
-                    "%",
-                ]
                 # startup codes
-                machine_starts = [
+                startup_codes = [
                     "G90 G94 G17 G49 G40 G80",
                     "G20",
                     "G28 G91 Z0.",
                     "G90",
                 ]
-
-                # Start the NBlock sequence after the program_starts
-                self._last_nblock = len(program_starts)
-                header = self._nblock_prefix(header_meta + machine_starts)
-                return self._add_line_breaks(program_starts + header)
+                return header_meta + startup_codes
             case "fanuc":
                 return None
             case "siemens":
@@ -201,29 +208,28 @@ class GCodeSampleGenerator:
         while len(seqno_tools) < self.number_of_sequences:
             seqno_tools.append(random.choice(list(self.tcodes.keys())))
 
+        seq_gcode = []
         seqno = 1
         for seqno_tool in seqno_tools:
-            print(f"Seq {seqno} uses {seqno_tool}")
+            seqgenerator = SeqGenerator(tcodeid=seqno_tool, tcode_params=self.tcodes[seqno_tool])
+            seq_gcode.append(f"(@@ seq_start = {seqno})")
+            seq_gcode.extend(seqgenerator.generate_random_motion())
+            seq_gcode.append(f"(@@ seq_end = {seqno})")
             seqno += 1
-            test = SeqGenerator(self.tcodes[seqno_tool])
-            print(test.generate_random_motion())
 
-        
-        print("debug")
+        return seq_gcode
     
-    def generate_gcode(self):
-
-        self._generate_sequences()
-
-        generated_gcode = [
-            self._generate_header(),
-            "M30"
-        ]
-
-        print(self._add_line_breaks(generated_gcode))
+    def _generate_gcode(self):
         
+        no_nblock = self._generate_file_start()
+        with_nblock = self._generate_header() + self._generate_sequences() + ["M30"]
 
-        print("debug")
+        start_block_num = len(no_nblock) + 1
+
+        # Using list comprehension to add the prefix
+        nblocks_added = [f"N{start_block_num + i} {item}" for i, item in enumerate(with_nblock)]
+
+        return no_nblock + nblocks_added + ["%"]
     
     def print_summary(self):
         """
@@ -241,17 +247,9 @@ class GCodeSampleGenerator:
 
 def run():
 
-    # Plan: 
-    # 1. Load the sample tools JSON file
-    # 2. Select a random number of tools
-    # 3. Select a random number of sequences
-    # 4. Generate motion for each sequence. Use each tool once, and then repeat if # of tools hasn't been met. 
-    # 5. Generate a random file name
-    # 6. Save the generated motion to a new G-code file
-
-    gcode = GCodeSampleGenerator()
+    generated_gcode = GCodeSampleGenerator()
     # gcode.print_summary()
-    gcode.generate_gcode()
+    print(generated_gcode.gcode)
 
 if __name__ == "__main__":
     run()
