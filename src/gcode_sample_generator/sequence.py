@@ -1,6 +1,6 @@
 import random
 
-class Motion:
+class SeqGenerator:
     """
     Represents a motion controller for machining operations.
 
@@ -28,7 +28,7 @@ class Motion:
     APPROACH = 1.0
     RETRACT = 0.250
 
-    def __init__(self, controller_os: str, tcode: dict) -> None:
+    def __init__(self, tcode: dict) -> None:
         """
         Initialize the Motion object with controller operating system, tool code data,
         and randomly calculated parameters.
@@ -44,7 +44,6 @@ class Motion:
             feedrate (float): Randomly calculated feedrate.
             size (int): Randomly determined size value for operations.
         """
-        self.controller_os = controller_os
         self.tcode = tcode
         
     def _calc_random_rpm(self) -> float:
